@@ -480,15 +480,16 @@ def _ensure_plugin_path() -> None:
     if os.environ.get("EDGELLM_PLUGIN_PATH"):
         return
     project_root = Path(__file__).resolve().parents[3]
-    search_dirs = [
-        project_root / "build" / "core",
-        project_root / "build" / "lib",
-    ]
-    for d in search_dirs:
-        candidate = d / _PLUGIN_LIB_NAME
-        if candidate.is_file():
-            os.environ["EDGELLM_PLUGIN_PATH"] = str(candidate)
-            return
+    build_dirs = []
+    if os.environ.get("BUILD_DIR"):
+        build_dirs.append(Path(os.environ["BUILD_DIR"]).expanduser().resolve())
+    build_dirs.append(project_root / "build")
+    for build_dir in build_dirs:
+        for d in (build_dir / "core", build_dir / "lib", build_dir):
+            candidate = d / _PLUGIN_LIB_NAME
+            if candidate.is_file():
+                os.environ["EDGELLM_PLUGIN_PATH"] = str(candidate)
+                return
 
 
 def _import_runtime():
